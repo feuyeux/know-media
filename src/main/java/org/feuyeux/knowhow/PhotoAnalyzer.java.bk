@@ -1,0 +1,93 @@
+package org.feuyeux.knowhow.photo.spark;
+
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.function.Function;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
+import org.feuyeux.knowhow.domain.PhotoInfo;
+
+import static org.apache.spark.sql.functions.col;
+
+public class PhotoAnalyzer {
+    public static void main(String[] args) {
+        String metaPath = args[0];
+
+        SparkSession sc = SparkSession
+                .builder()
+                .appName("PhotoAnalyzer Application")
+                .master("local[*]")
+                .getOrCreate();
+
+        JavaRDD<PhotoInfo> photoRdd = sc.read().textFile(metaPath).javaRDD()
+                .map(((Function<String, PhotoInfo>) line -> {
+                    String[] parts = line.split("\\|");
+                    PhotoInfo photoInfo = null;
+                    try {
+                        photoInfo = new PhotoInfo();
+                        photoInfo.setOriginalTime(parts[0]);
+                        photoInfo.setStage(parts[1]);
+                        photoInfo.setName(parts[2]);
+                        photoInfo.setDir(parts[3]);
+                        photoInfo.setExtension(parts[4]);
+                        photoInfo.setSize(Integer.valueOf(parts[5]));
+                        photoInfo.setExposureTime(parts[6]);
+                        photoInfo.setFNumber(parts[7]);
+                        photoInfo.setWidth(Integer.valueOf(parts[8]));
+                        photoInfo.setHeight(Integer.valueOf(parts[9]));
+                        if (parts.length == 12) {
+                            photoInfo.setLatitude(parts[10]);
+                            photoInfo.setLongitude(parts[11]);
+                        }
+                    } catch (Exception e) {
+                        log.error("Error to parse photo:" + e.getMessage());
+                    }
+                    return photoInfo;
+                })).cache();
+
+        //printCounts(photoRdd);//total = 28257?28257(jpg[25259],png[352],nef[2641],tif[5])
+
+        Dataset<Row> photoDf = sc.createDataFrame(photoRdd, PhotoInfo.class);
+        photoDf.createOrReplaceTempView("photo");
+
+        //showStageCount(sc);
+        showGPS(sc);
+        sc.stop();
+    }
+
+    private static void showGPS(SparkSession sc) {
+        String t = "SELECT name as NAME,stage as STAGE,longitude as JING,latitude as WEI FROM photo " +
+                "where latitude != 'null' and latitude != '0.0' " +
+                "order by latitude";
+        Dataset<Row> df = sc.sql(t).distinct().cache();
+        //df.show(5000, false);
+        //log.info("count=" + df.count());//count=4521
+
+        Dataset<Row> xiaMenDf = df.filter(col("WEI").lt(25).and(col("WEI").gt(23)));
+        xiaMenDf.show(1000, false);
+        log.info("count=" + xiaMenDf.count());
+    }
+
+    private static void showStageCount(SparkSession sc) {
+        /*Dataset<Row> selectDf = sc.sql("SELECT stage,extension, count(*) as count FROM photo group by stage,extension order by count desc").cache();*/
+        String t = "SELECT 0 as no, stage,count(*) as count FROM photo group by stage order by count desc";
+        Dataset<Row> groupByDf = sc.sql(t);
+        groupByDf.select(col("stage"), col("count")).show(1000, false);
+    }
+
+    static void printCounts(JavaRDD<PhotoInfo> photoRdd) {
+        JavaRDD<PhotoInfo> jpgRdd = photoRdd.filter(photoInfo -> photoInfo.getExtension().equals("jpg"));
+        JavaRDD<PhotoInfo> pngRdd = photoRdd.filter(photoInfo -> photoInfo.getExtension().equals("png"));
+        JavaRDD<PhotoInfo> nefRdd = photoRdd.filter(photoInfo -> photoInfo.getExtension().equals("nef"));
+
+        JavaRDD<PhotoInfo> normalRdd = jpgRdd.union(pngRdd).union(nefRdd);
+        JavaRDD<PhotoInfo> tifRdd = photoRdd.subtract(normalRdd);
+
+        long jpgCount = jpgRdd.count();
+        long pngCount = pngRdd.count();
+        long nefCount = nefRdd.count();
+        long tifCount = tifRdd.count();
+        log.info("total = " + photoRdd.count() + "?" + (jpgCount + pngCount + nefCount + tifCount) +
+                "(jpg[" + jpgCount + "],png[" + pngCount + "],nef[" + nefCount + "],tif[" + tifCount + "])");
+    }
+}
