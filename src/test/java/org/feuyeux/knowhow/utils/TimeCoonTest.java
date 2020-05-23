@@ -1,10 +1,10 @@
 package org.feuyeux.knowhow.utils;
 
-import java.text.ParseException;
-import java.util.Date;
-
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
+
+import java.text.ParseException;
+import java.util.Date;
 
 @Slf4j
 public class TimeCoonTest {

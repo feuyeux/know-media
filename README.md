@@ -1,5 +1,5 @@
 # know-media
-
+To 
 Windows
 ```sh
 SET ACTION_COPY=0
@@ -14,9 +14,9 @@ Linux
 ```sh
 export ACTION_COPY=0
 export ACTION_MOVE=1
-export from_dir=/tmp/2020-05
-export foto_dir=/tmp/foto
-export video_dir=/tmp/video
+export from_dir=/tmp/media
+export foto_dir=/tmp/0523/foto
+export video_dir=/tmp/0523/video
 mvn clean package -DskipTests
-java -jar target/know-media-0.0.1-SNAPSHOT.jar ${from_dir} ${foto_dir} ${video_dir} ${ACTION_COPY}
+java -jar target/know-media-0.0.1-SNAPSHOT.jar ${from_dir} ${foto_dir} ${video_dir} ${ACTION_MOVE}
 ```

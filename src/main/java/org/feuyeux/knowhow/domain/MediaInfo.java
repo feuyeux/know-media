@@ -35,20 +35,20 @@ public class MediaInfo implements Serializable {
 
     public String output() {
         return originalTime + "|"
-            + stage + "|"
-            + dir + "|"
-            + name + "|"
-            + extension + "|"
-            + exposureTime + "|"
-            + fNumber + "|"
-            + width + "|"
-            + height + "|"
-            + latitude + "|"
-            + longitude + "|"
-            + durationMills + "|"
-            + vResolution + "|"
-            + hResolution + "|"
-            + size + "|"
-            + compressionType + "|";
+                + stage + "|"
+                + dir + "|"
+                + name + "|"
+                + extension + "|"
+                + exposureTime + "|"
+                + fNumber + "|"
+                + width + "|"
+                + height + "|"
+                + latitude + "|"
+                + longitude + "|"
+                + durationMills + "|"
+                + vResolution + "|"
+                + hResolution + "|"
+                + size + "|"
+                + compressionType + "|";
     }
 }
