@@ -25,5 +25,6 @@ public class KnowMediaMain {
             System.exit(0);
         }
         MediaService.execute(srcPath, photoTargetPath, videoTargetPath, action == 0 ? Action.COPY : Action.MOVE);
+        log.info("DONE");
     }
 }
