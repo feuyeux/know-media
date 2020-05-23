@@ -1,5 +1,8 @@
 package org.feuyeux.knowhow.utils;
 
+import lombok.extern.slf4j.Slf4j;
+import org.feuyeux.knowhow.domain.MediaInfo;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -7,18 +10,18 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
-import org.feuyeux.knowhow.domain.MediaInfo;
-
 /**
  * @author feuyeux@gmail.com
  * @date 2019/09/01
  */
-public class MediaUtils {
+@Slf4j
+public class MediaCoon {
     public static void needToCopy(MediaInfo photoInfo, String dir, boolean isNeed) throws IOException {
         if (isNeed) {
             MediaAction mediaAction = new MediaAction(photoInfo, dir).invoke();
             Path source = mediaAction.getSource();
             Path target = mediaAction.getTarget();
+            log.info("Copy source={},target={}", source, target);
             Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
         }
     }
@@ -28,6 +31,7 @@ public class MediaUtils {
             MediaAction mediaAction = new MediaAction(photoInfo, dir).invoke();
             Path source = mediaAction.getSource();
             Path target = mediaAction.getTarget();
+            log.info("Move source={},target={}", source, target);
             Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
             Path parent = source.getParent();
             long count = Files.list(parent).count();

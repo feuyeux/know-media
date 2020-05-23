@@ -4,8 +4,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.feuyeux.knowhow.domain.Action;
 import org.feuyeux.knowhow.domain.MediaInfo;
-import org.feuyeux.knowhow.utils.MediaUtils;
-import org.feuyeux.knowhow.utils.MetaUtils;
+import org.feuyeux.knowhow.utils.MediaCoon;
+import org.feuyeux.knowhow.utils.MetaCoon;
+import org.feuyeux.knowhow.utils.ThreadCoon;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,7 +22,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * @date 2019/09/01
  */
 @Slf4j
-public class MediaCollector {
+public class MediaService {
     private static final int BATCH_SIZE = 10000;
     private static final List<String> processedFiles = new CopyOnWriteArrayList<>();
 
@@ -49,7 +50,7 @@ public class MediaCollector {
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attr) throws IOException {
                     if (!attr.isDirectory()) {
                         log.info(++exeSeq + "." + file);
-                        MediaInfo mediaInfo = MetaUtils.parseFile(file, attr);
+                        MediaInfo mediaInfo = MetaCoon.parseFile(file, attr);
                         if (mediaInfo != null) {
                             String targetPath = mediaInfo.isPhoto() ? photoTargetPath : videoTargetPath;
                             /*去重条件*/
@@ -58,9 +59,22 @@ public class MediaCollector {
                             if (!processedFiles.contains(key)) {
                                 processedFiles.add(key);
                                 if (action == Action.COPY) {
-                                    MediaUtils.needToCopy(mediaInfo, targetPath, targetPath != null);
+                                    ThreadCoon.submit(() -> {
+                                        try {
+                                            MediaCoon.needToCopy(mediaInfo, targetPath, targetPath != null);
+                                        } catch (IOException e) {
+                                            log.error("Fail to copy", e);
+                                        }
+                                    });
+
                                 } else if (action == Action.MOVE) {
-                                    MediaUtils.needToMove(mediaInfo, targetPath, targetPath != null);
+                                    ThreadCoon.submit(() -> {
+                                        try {
+                                            MediaCoon.needToMove(mediaInfo, targetPath, targetPath != null);
+                                        } catch (IOException e) {
+                                            log.error("Fail to move", e);
+                                        }
+                                    });
                                 } else {
                                     log.info("Check Only: mediaInfo={},targetPath={}", mediaInfo, targetPath);
                                 }

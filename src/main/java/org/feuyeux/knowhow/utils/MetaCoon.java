@@ -26,7 +26,7 @@ import static com.drew.imaging.FileType.*;
  * @date 2019/09/01
  */
 @Slf4j
-public class MetaUtils {
+public class MetaCoon {
     public static final String SPACE = " ";
     private static final List<String> photoTypes = Arrays.asList(Jpeg.getName(), "JPG", Png.getName(), Gif.getName());
     private static final List<String> videoTypes = Arrays.asList(Mp4.getName(), Mov.getName(), Avi.getName());
@@ -69,7 +69,7 @@ public class MetaUtils {
             originalTime = fileTime.toString();
             mediaInfo.setOriginalTime(originalTime);
         }
-        String stage = TimeUtils.trans(originalTime);
+        String stage = TimeCoon.trans(originalTime);
         /*将时间信息转换为类别特征*/
         mediaInfo.setStage(stage);
 
@@ -86,64 +86,65 @@ public class MetaUtils {
         try {
             Metadata metadata = Mp4MetadataReader.readMetadata(file);
             for (Directory directory : metadata.getDirectories()) {
-                for (Tag tag : directory.getTags()) {
-                    //标签名
-                    String tagName = tag.getTagName();
-                    //标签信息
-                    String desc = tag.getDescription();
+                directory.getTags().parallelStream().forEach(tag -> parseVideo0(size, tag, result));
+            }
+            return result;
+        } catch (ImageProcessingException | IOException e) {
+            log.info(file + "<-" + e.getMessage());
+            return null;
+        }
+    }
+
+    private static void parseVideo0(long size, Tag tag, MediaInfo result) {
+        //标签名
+        String tagName = tag.getTagName();
+        //标签信息
+        String desc = tag.getDescription();
                     /*
                     com.drew.metadata.mp4.media.Mp4VideoDirectory
                     com.drew.metadata.mp4.media.Mp4MediaDirectory
                     com.drew.metadata.mp4.Mp4Directory
                     com.drew.metadata.Directory
                      */
-                    switch (tagName) {
-                        case "Creation Time":
-                            result.setOriginalTime(desc);
-                            break;
-                        case "File Name":
-                            int i = desc.lastIndexOf(".");
-                            String fileName = desc.substring(0, i);
-                            String typeName = desc.substring(i + 1).toLowerCase();
-                            result.setName(fileName + "." + typeName);
-                            result.setExtension(typeName);
-                            break;
-                        case "File Size":
-                            result.setSize(size);
-                            break;
-                        case "Duration":
-                            result.setDurationMills(Integer.parseInt(desc));
-                            break;
-                        case "Width":
-                            result.setWidth(getWh(desc));
-                            break;
-                        case "Height":
-                            result.setHeight(getWh(desc));
-                            break;
-                        case "Compression Type":
-                            result.setCompressionType(desc);
-                            break;
-                        case "Horizontal Resolution":
-                            result.setHResolution(Integer.parseInt(desc));
-                            break;
-                        case "Vertical Resolution":
-                            result.setVResolution(Integer.parseInt(desc));
-                            break;
-                        case "GPS Latitude":
-                            result.setLatitude(pointToLatLong(desc));
-                            break;
-                        case "GPS Longitude":
-                            result.setLongitude(pointToLatLong(desc));
-                            break;
-                        default:
-                    }
-                }
-            }
-
-            return result;
-        } catch (ImageProcessingException | IOException e) {
-            log.info(file + "<-" + e.getMessage());
-            return null;
+        switch (tagName) {
+            case "Creation Time":
+                result.setOriginalTime(desc);
+                break;
+            case "File Name":
+                int i = desc.lastIndexOf(".");
+                String fileName = desc.substring(0, i);
+                String typeName = desc.substring(i + 1).toLowerCase();
+                result.setName(fileName + "." + typeName);
+                result.setExtension(typeName);
+                break;
+            case "File Size":
+                result.setSize(size);
+                break;
+            case "Duration":
+                result.setDurationMills(Integer.parseInt(desc));
+                break;
+            case "Width":
+                result.setWidth(getWh(desc));
+                break;
+            case "Height":
+                result.setHeight(getWh(desc));
+                break;
+            case "Compression Type":
+                result.setCompressionType(desc);
+                break;
+            case "Horizontal Resolution":
+                result.setHResolution(Integer.parseInt(desc));
+                break;
+            case "Vertical Resolution":
+                result.setVResolution(Integer.parseInt(desc));
+                break;
+            case "GPS Latitude":
+                result.setLatitude(pointToLatLong(desc));
+                break;
+            case "GPS Longitude":
+                result.setLongitude(pointToLatLong(desc));
+                break;
+            default:
         }
     }
 

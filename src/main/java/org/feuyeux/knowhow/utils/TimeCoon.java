@@ -1,21 +1,21 @@
 package org.feuyeux.knowhow.utils;
 
-import java.util.Calendar;
-
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.Calendar;
 
 /**
  * @author feuyeux@gmail.com
  * @date 2019/09/01
  */
 @Slf4j
-public class TimeUtils {
+public class TimeCoon {
     static final org.joda.time.format.DateTimeFormatter dtf = org.joda.time.format.ISODateTimeFormat.dateTime();
     static final org.joda.time.format.DateTimeFormatter dtxf = org.joda.time.format.ISODateTimeFormat.dateTimeNoMillis();
     static final java.time.format.DateTimeFormatter f = java.time.format.DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss");
     static final java.time.format.DateTimeFormatter f3 = java.time.format.DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm::SS");
     static final java.time.format.DateTimeFormatter f2 = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:SSS'Z'");
-    static final java.text.SimpleDateFormat f0 = new java.text.SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy", java.util.Locale.ENGLISH);
+    static final java.text.SimpleDateFormat f0 = new java.text.SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy");
 
     public static String trans(String originalTime) {
         String s = trans0(originalTime);
@@ -43,7 +43,17 @@ public class TimeUtils {
             java.util.Date date = f0.parse(originalTime);
             c.setTime(date);
         } catch (Exception e) {
-            return null;
+            try {
+                String[] values = originalTime.split(" ");
+                String value = values[1];
+                int index = value.indexOf("月");
+                if (index > -1) {
+                    return toYearMonth(Integer.parseInt(value.substring(0, index)), Integer.parseInt(values[5]));
+                }
+                return toYearMonth(Integer.parseInt(value), Integer.parseInt(values[5]));
+            } catch (Exception e2) {
+                return null;
+            }
         }
         int monthValue = c.get(Calendar.MONTH) + 1;
         return toYearMonth(monthValue, c.get(Calendar.YEAR));
