@@ -29,7 +29,7 @@ import static com.drew.imaging.FileType.*;
 public class MetaCoon {
     public static final String SPACE = " ";
     private static final List<String> photoTypes = Arrays.asList(Jpeg.getName(), "JPG", Png.getName(), Gif.getName());
-    private static final List<String> videoTypes = Arrays.asList(Mp4.getName(), Mov.getName(), Avi.getName());
+    private static final List<String> videoTypes = Arrays.asList(Mp4.getName(), QuickTime.getName(), Avi.getName());
 
     /**
      * 获取元数据信息
@@ -89,7 +89,7 @@ public class MetaCoon {
                 directory.getTags().parallelStream().forEach(tag -> parseVideo0(size, tag, result));
             }
             return result;
-        } catch (ImageProcessingException | IOException e) {
+        } catch (Exception e) {
             log.info(file + "<-" + e.getMessage());
             return null;
         }
