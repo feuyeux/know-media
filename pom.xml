@@ -8,7 +8,7 @@
 
     <properties>
         <java.version>8</java.version>
-        <log4j2.version>2.24.1</log4j2.version>
+        <log4j2.version>2.25.2</log4j2.version>
     </properties>
 
     <dependencies>
